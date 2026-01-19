@@ -10,9 +10,10 @@ import { colors } from "../constants/colors"
 import { clientAPI, proAPI } from "../services/api"
 import type { ClientEnrollment, ProInfo } from "../types/models"
 import { storage } from "../services/storage"
+import { AddToWalletButton } from "../componnents/AddToWalletButton"
 
 export default function EnrollmentPage() {
-  const { slug } = useParams<{ slug: string}>()
+  const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
 
   const [proInfo, setProInfo] = useState<ProInfo['pro'] | null>(null)
@@ -47,19 +48,19 @@ export default function EnrollmentPage() {
         setError("Commerce introuvable")
       }
     } catch (err: unknown) {
- 
+
       // Pour accéder aux propriétés spécifiques d'Axios sans utiliser 'any'
-      const axiosError = err as { 
-        message: string; 
-        config?: { url: string }; 
-        response?: { data: { error?: string }; status: number } 
+      const axiosError = err as {
+        message: string;
+        config?: { url: string };
+        response?: { data: { error?: string }; status: number }
       };
-      
-      alert(`DEBUG RÉSEAU:\nMessage: ${axiosError.message}\nURL: ${axiosError.config?.url}`);
-        
-      const msg = axiosError.response?.data?.error || "Une erreur est survenue.";
+
+      console.error("DEBUG RÉSEAU:", axiosError.message, axiosError.config?.url);
+
+      const msg = axiosError.response?.data?.error || axiosError.message || "Une erreur est survenue.";
       setError(msg);
- 
+
     } finally {
       setLoading(false)
     }
@@ -194,13 +195,17 @@ export default function EnrollmentPage() {
               </div>
             </div>
 
-            <Button
-              onClick={() => navigate(`/carte/${serialNumber}`)}
-              className="w-full text-white h-12"
-              style={{ backgroundColor: brandColor }}
-            >
-              Voir ma carte de fidélité
-            </Button>
+            <div className="space-y-4">
+              <Button
+                onClick={() => navigate(`/carte/${serialNumber}`)}
+                className="w-full text-white h-12"
+                style={{ backgroundColor: brandColor }}
+              >
+                Voir ma carte de fidélité
+              </Button>
+
+              <AddToWalletButton serialNumber={serialNumber} />
+            </div>
 
             <p className="text-xs text-center mt-4 text-gray-500">
               Ajoutez cette page à votre écran d'accueil pour un accès rapide

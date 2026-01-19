@@ -20,6 +20,7 @@ export default function QRScanner({ slug }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false)
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
   const [error, setError] = useState<string>("")
+  const [isSuccessFlash, setIsSuccessFlash] = useState(false)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
 
   // Nettoyage lors de la fermeture de la page
@@ -39,9 +40,9 @@ export default function QRScanner({ slug }: QRScannerProps) {
       // On attend que le DOM soit mis à jour pour trouver la div "reader"
       setTimeout(() => {
         const scanner = new Html5QrcodeScanner(
-          "reader", 
-          { 
-            fps: 10, 
+          "reader",
+          {
+            fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
             formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
@@ -79,7 +80,7 @@ export default function QRScanner({ slug }: QRScannerProps) {
     handleScan(decodedText);
   }
 
-  const onScanFailure = (error: any) => {
+  const onScanFailure = (_error: any) => {
     // On ignore les échecs de lecture continue
   }
 
@@ -91,17 +92,23 @@ export default function QRScanner({ slug }: QRScannerProps) {
       // Récupérer pro_id depuis localStorage
       const proInfo = storage.getProInfo()
 
-      alert("Contenu de proInfo : " + JSON.stringify(proInfo));
-
       if (!proInfo || !proInfo.slug) {
-        console.log("Erreur de session:", proInfo);
         setError("Session expirée. Reconnectez-vous.");
         return;
       }
 
+      // Feedback Haptique (Vibration)
+      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(200);
+      }
+
+      // Feedback Visuel (Flash)
+      setIsSuccessFlash(true);
+      setTimeout(() => setIsSuccessFlash(false), 1000);
+
       const scanData: CarteScan = {
-          serial_number: serialFromUrl,
-          slug: proInfo.slug
+        serial_number: serialFromUrl,
+        slug: proInfo.slug
       };
 
       const response = await carteAPI.scan(scanData);
@@ -150,9 +157,12 @@ export default function QRScanner({ slug }: QRScannerProps) {
           <div className="p-6 space-y-6">
             {!scanResult && !error && (
               <div className="space-y-4">
-                
+
                 {/* ZONE DE VIDEO */}
-                <div className="relative aspect-square bg-black rounded-lg overflow-hidden">
+                <div
+                  className={`relative aspect-square bg-black rounded-lg overflow-hidden border-4 transition-colors duration-300 ${isSuccessFlash ? "border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.5)]" : "border-transparent"
+                    }`}
+                >
                   {isScanning ? (
                     <div id="reader" className="w-full h-full"></div>
                   ) : (

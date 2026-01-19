@@ -54,7 +54,7 @@ export default function RegistrationFormSimple() {
 
   const isStepValid = () => {
     switch (currentStep) {
-      case 1:{
+      case 1: {
         const hasAllFields = ProRegistration.nom && ProRegistration.business_nom && ProRegistration.email
         const isEmailValid = EMAIL_REGEX.test(ProRegistration.email)
         return hasAllFields && isEmailValid
@@ -464,10 +464,20 @@ export default function RegistrationFormSimple() {
                 {isSubmitting ? "Inscription..." : "S'inscrire ✓"}
               </Button>
             )}
+          </div>
 
-            <button onClick={() => alert(JSON.stringify(localStorage))}>
-              Vérifier la mémoire du téléphone
-            </button>
+          <div className="mt-6 pt-6 border-t text-center" style={{ borderColor: colors.border }}>
+            <p className="text-sm" style={{ color: colors.textLight }}>
+              Vous avez déjà un compte ?{" "}
+              <button
+                onClick={() => navigate("/recovery")}
+                className="font-semibold underline hover:no-underline transition-colors"
+                style={{ color: colors.primary }}
+                type="button"
+              >
+                Récupérer mon compte
+              </button>
+            </p>
           </div>
         </CardContent>
       </Card>

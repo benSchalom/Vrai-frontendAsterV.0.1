@@ -6,6 +6,7 @@ import CartePage from "./screen/CartePage"
 import ScanPage from "./screen/ScanPage"
 import { storage } from "./services/storage"
 import { Navigate } from "react-router-dom";
+import RecoveryPage from "./screen/RecoveryPage"
 
 
 function App() {
@@ -16,9 +17,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Page d'accueil - Formulaire d'inscription des pros */}
-        <Route path="/" element={ proInfo?.slug ? <Navigate to={`/dashboard/${proInfo.slug}`} /> : <HomePage /> } />
+        <Route path="/" element={proInfo?.slug ? <Navigate to={`/dashboard/${proInfo.slug}`} /> : <HomePage />} />
 
-        {/* Dashboard du pro - Accessible après inscription */}
+        {/* Dash du pro - Accessible après inscription */}
         <Route path="/dashboard/:slug" element={<DashboardPage />} />
 
         <Route path="/dashboard/:slug/scan" element={<ScanPage />} />
@@ -26,6 +27,8 @@ function App() {
         <Route path="/enroll/:slug" element={<EnrollmentPage />} />
 
         <Route path="/carte/:serial" element={<CartePage />} />
+
+        <Route path="/recovery" element={<RecoveryPage />} />
       </Routes>
     </BrowserRouter>
   )

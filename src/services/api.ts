@@ -14,12 +14,13 @@ import type { CarteInfo } from "../types/models"
 import { storage } from "./storage"
 
 
+
 // Configuration de l'API
 export const api = axios.create({
-  baseURL: 'http://192.168.69.241:5000',
- //baseURL: 'https://biocentric-cogent-nydia.ngrok-free.dev',
+  //baseURL: 'http://192.168.0.20:5000',
+  baseURL: 'https://cool-tips-fly.loca.lt',
 
-  timeout: 10000, 
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "true"
@@ -28,14 +29,14 @@ export const api = axios.create({
 
 // Intercepteur de requetes, dans le but d'ajouter un token d'authentification a chaque requête
 api.interceptors.request.use(
-    (config) => {
-      const token = storage.getToken(); 
-      if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    }, 
-    (error) => Promise.reject(error)
+  (config) => {
+    const token = storage.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
 )
 
 // Intercepteur de reponses des requetes pour la gestion des erreurs 401
@@ -71,4 +72,11 @@ export const carteAPI = {
 
 export const clientAPI = {
   enroll: (slug: string, data: ClientEnrollment) => api.post<ClientEnrollResult>(`/api/client/carte/${slug}`, data),
+}
+
+export const walletAPI = {
+  createPass: async (serial_number: string) => {
+    const response = await api.post("/api/wallet/create-pass", { serial_number })
+    return response.data
+  },
 }

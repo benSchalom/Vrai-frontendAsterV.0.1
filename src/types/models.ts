@@ -10,7 +10,7 @@ export interface ProRegistration {
   brand_color?: string
   logo_url?: string
   reward_limit?: number
-  reward_type?: "SERVICE OFFERT" | "REDUCTION" 
+  reward_type?: "SERVICE OFFERT" | "REDUCTION"
 }
 
 export interface ProRecovery {
@@ -25,7 +25,7 @@ export interface ClientEnrollment {
   device_id: string
 }
 
-export interface CarteScan{
+export interface CarteScan {
   serial_number: string,
   slug: string
 }
@@ -53,19 +53,19 @@ export interface ProRegistrationResponse {
   message: string
   pro: ProInfo['pro']
   access_token: string
-  refresh_token : string
+  refresh_token: string
 }
 
 export interface ProStats {
   success: boolean
-  stats:{
+  stats: {
     total_clients: number
     total_rewards_claimed: number
     total_rewards_future: number
   }
 }
 
-export interface ProRecoveryQuestionResult{
+export interface ProRecoveryQuestionResult {
   success: boolean
   secret_question: string,
   email: string
@@ -73,17 +73,15 @@ export interface ProRecoveryQuestionResult{
 
 export interface ProRecoveryResult {
   success: boolean
-  pro_id: number,
-  session_token: string,
-  slug: string,
   message: string
+  pro: ProInfo['pro']
   access_token: string
-  refresh_token : string
+  refresh_token: string
 }
 
 export interface ClientEnrollResult {
   success: boolean
-  info:{
+  info: {
     message: string
     carte_id: number
     serial_number: string
@@ -95,6 +93,7 @@ export interface ClientEnrollResult {
 export interface CarteInfo {
   success: boolean,
   carte: {
+    serial_number: string
     points: number
     total_rewards: number
     reward_limit: number
@@ -109,7 +108,7 @@ export interface CarteInfo {
   pro: {
     pro_name: string
     business_name: string
-    brand_color : string
+    brand_color: string
   }
 }
 

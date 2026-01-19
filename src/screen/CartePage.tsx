@@ -5,6 +5,7 @@ import { Button } from "../componnents/ui/button"
 import { colors } from "../constants/colors"
 import type { CarteInfo } from "../types/models"
 import { carteAPI } from "../services/api"
+import { AddToWalletButton } from "../componnents/AddToWalletButton"
 
 
 export default function CartePage() {
@@ -17,11 +18,19 @@ export default function CartePage() {
   useEffect(() => {
     if (serial) {
       loadCarteInfo(serial)
+
+      // Mise en place du rafraîchissement automatique toutes les 10 secondes
+      const interval = setInterval(() => {
+        loadCarteInfo(serial, true) // 'true' pour un rafraîchissement silencieux
+      }, 10000)
+
+      return () => clearInterval(interval)
     }
   }, [serial])
 
-  const loadCarteInfo = async (serial: string) => {
+  const loadCarteInfo = async (serial: string, silent = false) => {
     try {
+      if (!silent) setLoading(true)
       const response = await carteAPI.getInfo(serial)
       const data = response.data
 
@@ -295,6 +304,17 @@ export default function CartePage() {
               </Button>
             </CardContent>
           )}
+        </Card>
+
+        {/* Bouton Google Wallet */}
+        <Card>
+          <CardHeader>
+            <h3 className="font-semibold text-gray-900">Ajouter à votre wallet</h3>
+            <p className="text-sm text-gray-600">Gardez votre carte de fidélité toujours accessible</p>
+          </CardHeader>
+          <CardContent>
+            <AddToWalletButton serialNumber={carteInfo.carte.serial_number} />
+          </CardContent>
         </Card>
 
         {/* Info PWA */}
