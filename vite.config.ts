@@ -45,10 +45,10 @@ export default defineConfig({
     },
   })],
 
-    server: {
+  server: {
     host: true, // Pour le --host
     allowedHosts: [
-      '.dev'                 
+      '.dev'
     ]
   },
 

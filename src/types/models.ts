@@ -11,6 +11,7 @@ export interface ProRegistration {
   logo_url?: string
   reward_limit?: number
   reward_type?: "SERVICE OFFERT" | "REDUCTION"
+  pays?: string
 }
 
 export interface ProRecovery {
@@ -45,6 +46,7 @@ export interface ProInfo {
     slug: string
     reward_limit: number
     reward_type: "SERVICE OFFERT" | "REDUCTION"
+    pays?: string
   }
 }
 
@@ -109,6 +111,8 @@ export interface CarteInfo {
     pro_name: string
     business_name: string
     brand_color: string
+    logo_url?: string
+    reward_type: "SERVICE OFFERT" | "REDUCTION"
   }
 }
 

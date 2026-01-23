@@ -28,9 +28,9 @@ export default function DashboardPage() {
 
   const loadDashboard = async () => {
 
-    try{
+    try {
 
-      setLoading(true); 
+      setLoading(true);
       setError("")
 
       const cachedPro = storage.getProInfo()
@@ -46,8 +46,8 @@ export default function DashboardPage() {
       setProInfo(cachedPro);
       const cachedProStats = storage.getProStats()
       if (cachedProStats) setStats(cachedProStats)
-      setLoading(false); 
-      
+      setLoading(false);
+
       // Appel API pour récupérer les infos du pro
       const response = await proAPI.getInfo(cachedPro.slug)
       const data = await response.data
@@ -59,7 +59,7 @@ export default function DashboardPage() {
         setStats(dataStats.stats)
         storage.setProInfo(data.pro)
         storage.setProStats(dataStats.stats)
-      } 
+      }
     } catch (err) {
       console.error("Erreur synchronisation des données:", err)
       if (!storage.getProInfo()) {
@@ -78,9 +78,9 @@ export default function DashboardPage() {
   const handleScanQR = () => {
     const slug = storage.getProInfo()?.slug
 
-    if (slug){
+    if (slug) {
       navigate(`/dashboard/${slug}/scan`)
-    }else{
+    } else {
       navigate("/?error=session_expired")
     }
   }
@@ -120,17 +120,37 @@ export default function DashboardPage() {
       <div className="border-b" style={{ backgroundColor: brandColor }}>
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white">{proInfo.business_nom}</h1>
-              <p className="text-white text-sm mt-1 opacity-90">Tableau de bord professionnel</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-sm">
+                {proInfo.logo_url ? (
+                  <img src={proInfo.logo_url} alt={proInfo.business_nom} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xl font-bold" style={{ color: brandColor }}>
+                    {proInfo.business_nom.charAt(0)}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">{proInfo.business_nom}</h1>
+                <p className="text-white text-sm mt-1 opacity-90">Tableau de bord professionnel</p>
+              </div>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="w-full sm:w-auto bg-white text-gray-800 hover:bg-gray-100"
-            >
-              Déconnexion
-            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                onClick={() => navigate(`/dashboard/${proInfo.slug}/settings`)}
+                variant="outline"
+                className="flex-1 sm:flex-none bg-white/10 text-white border-white/20 hover:bg-white/20"
+              >
+                Paramètres
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="flex-1 sm:flex-none bg-white text-gray-800 hover:bg-gray-100"
+              >
+                Déconnexion
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -150,18 +170,16 @@ export default function DashboardPage() {
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === "overview" ? "border-b-2 text-blue-600" : "text-gray-600 hover:text-gray-800"
-            }`}
+            className={`px-4 py-2 font-medium transition-colors ${activeTab === "overview" ? "border-b-2 text-blue-600" : "text-gray-600 hover:text-gray-800"
+              }`}
             style={activeTab === "overview" ? { borderColor: brandColor, color: brandColor } : {}}
           >
             Vue d'ensemble
           </button>
           <button
             onClick={() => setActiveTab("qr-code")}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === "qr-code" ? "border-b-2 text-blue-600" : "text-gray-600 hover:text-gray-800"
-            }`}
+            className={`px-4 py-2 font-medium transition-colors ${activeTab === "qr-code" ? "border-b-2 text-blue-600" : "text-gray-600 hover:text-gray-800"
+              }`}
             style={activeTab === "qr-code" ? { borderColor: brandColor, color: brandColor } : {}}
           >
             QR Code

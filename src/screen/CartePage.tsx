@@ -89,15 +89,19 @@ export default function CartePage() {
         <div className="max-w-2xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white/20">
+                {pro.logo_url ? (
+                  <img src={pro.logo_url} alt={pro.business_name} className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-6 h-6" style={{ color: pro.brand_color || colors.primary }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                )}
               </div>
               <div>
                 <h1 className="text-lg font-bold text-white">{pro.business_name}</h1>
@@ -142,9 +146,13 @@ export default function CartePage() {
                 />
               </svg>
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-white">Récompense disponible!</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {pro.reward_type === "SERVICE OFFERT" ? "Offre gratuite disponible !" : "Réduction disponible !"}
+                </h2>
                 <p className="text-white/90 text-sm mt-1">
-                  Présentez cette carte au commerçant pour réclamer votre récompense
+                  {pro.reward_type === "SERVICE OFFERT"
+                    ? "Présentez cette carte pour profiter de votre service offert."
+                    : `Présentez cette carte pour bénéficier de votre réduction chez ${pro.business_name}.`}
                 </p>
               </div>
             </div>
@@ -204,8 +212,8 @@ export default function CartePage() {
 
               <p className="text-sm mt-2 text-center text-gray-600">
                 {carte.reward_available
-                  ? "Félicitations! Vous avez atteint l'objectif"
-                  : `Plus que ${remainingPoints} point${remainingPoints > 1 ? "s" : ""} pour votre récompense`}
+                  ? (pro.reward_type === "SERVICE OFFERT" ? "Félicitations ! C'est offert !" : "Félicitations ! Profitez de votre réduction !")
+                  : `Plus que ${remainingPoints} point${remainingPoints > 1 ? "s" : ""} pour votre ${pro.reward_type === "SERVICE OFFERT" ? "service offert" : "réduction"}`}
               </p>
             </div>
 

@@ -12,8 +12,21 @@ export const storage = {
   },
 
   setToken: (token: string) => {
-    if (typeof window !== "undefined") { //Local storage est dans window qui est accessible uniquement dans des navigateurs
+    if (typeof window !== "undefined") {
       localStorage.setItem("session_token", token)
+    }
+  },
+
+  getRefreshToken: () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("refresh_token")
+    }
+    return ""
+  },
+
+  setRefreshToken: (token: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("refresh_token", token)
     }
   },
 
@@ -40,11 +53,11 @@ export const storage = {
 
   removeProInfo: () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("pro_info") 
+      localStorage.removeItem("pro_info")
     }
   },
 
-    // Pro info
+  // Pro info
   getProStats: (): ProStats['stats'] | null => {
     if (typeof window !== "undefined") {
       const data = localStorage.getItem("pro_stats")
@@ -61,7 +74,7 @@ export const storage = {
 
   removeProStats: () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("pro_stats") 
+      localStorage.removeItem("pro_stats")
     }
   },
 
@@ -84,6 +97,7 @@ export const storage = {
   clearAll: () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("session_token")
+      localStorage.removeItem("refresh_token")
       localStorage.removeItem("pro_info")
       localStorage.removeItem("pro_stats")
     }

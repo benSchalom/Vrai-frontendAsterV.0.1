@@ -7,6 +7,7 @@ import ScanPage from "./screen/ScanPage"
 import { storage } from "./services/storage"
 import { Navigate } from "react-router-dom";
 import RecoveryPage from "./screen/RecoveryPage"
+import SettingsPage from "./screen/SettingsPage"
 
 
 function App() {
@@ -23,6 +24,8 @@ function App() {
         <Route path="/dashboard/:slug" element={<DashboardPage />} />
 
         <Route path="/dashboard/:slug/scan" element={<ScanPage />} />
+
+        <Route path="/dashboard/:slug/settings" element={<SettingsPage />} />
 
         <Route path="/enroll/:slug" element={<EnrollmentPage />} />
 

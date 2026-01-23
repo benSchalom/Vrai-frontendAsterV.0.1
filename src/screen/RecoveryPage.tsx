@@ -11,6 +11,7 @@ import { colors } from "../constants/colors"
 import { storage } from "../services/storage"
 import { proAPI } from "../services/api"
 import type { ProRecovery } from "../types/models"
+import { AxiosError } from "axios"
 
 export default function RecoveryPage() {
   const navigate = useNavigate()
@@ -48,9 +49,15 @@ export default function RecoveryPage() {
         setStep("answer")
       }
     } catch (err: unknown) {
-      const error = err as Error
-      console.error("Erreur lors de l'inscription:", error.message)
-      const msg = error.message || "Email introuvable."
+      console.error("Erreur lors de l'inscription:", err)
+      let msg = "Email introuvable."
+
+      if (err instanceof AxiosError && err.response?.data?.error) {
+        msg = err.response.data.error
+      } else if (err instanceof Error) {
+        msg = err.message
+      }
+
       setError(msg)
     } finally {
       setLoading(false)
@@ -73,18 +80,25 @@ export default function RecoveryPage() {
       const response = await proAPI.recovery(formData)
 
       if (response.data.success) {
-        const { pro, access_token } = response.data
+        const { pro, access_token, refresh_token } = response.data
 
         storage.setToken(access_token)
+        storage.setRefreshToken(refresh_token)
         storage.setProInfo(pro)
 
         setSlug(pro.slug)
         setSuccess(true)
       }
     } catch (err: unknown) {
-      const error = err as Error
-      console.error("Erreur lors de l'inscription:", error.message)
-      const msg = error.message || "Réponse incorrecte"
+      console.error("Erreur lors de la récupération:", err)
+      let msg = "Réponse incorrecte"
+
+      if (err instanceof AxiosError && err.response?.data?.error) {
+        msg = err.response.data.error
+      } else if (err instanceof Error) {
+        msg = err.message
+      }
+
       setError(msg)
     } finally {
       setLoading(false)

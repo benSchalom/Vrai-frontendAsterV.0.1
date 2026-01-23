@@ -1,5 +1,4 @@
 import axios from "axios"
-import type { ProRegistration } from "../types/models"
 import type { ProRegistrationResponse } from "../types/models"
 import type { ProRecovery } from "../types/models"
 import type { ProRecoveryResult } from "../types/models"
@@ -18,12 +17,12 @@ import { storage } from "./storage"
 // Configuration de l'API
 export const api = axios.create({
   //baseURL: 'http://192.168.0.20:5000',
-  baseURL: 'https://cool-tips-fly.loca.lt',
+  baseURL: 'https://new-spiders-say.loca.lt',
 
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true"
+    "bypass-tunnel-reminder": "true"
   },
 })
 
@@ -44,8 +43,38 @@ api.interceptors.response.use(
   (response) => {
     return response
   },
-  (error) => {
-    // TODO: logique de rafraichissement du token
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Si on a une erreur 401 et qu'on n'a pas déjà essayé de rafraîchir
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = storage.getRefreshToken();
+
+      if (refreshToken) {
+        try {
+          const res = await axios.post(`${api.defaults.baseURL}/api/pro/refresh`, {}, {
+            headers: { Authorization: `Bearer ${refreshToken}` }
+          });
+
+          if (res.data.success) {
+            const newToken = res.data.access_token;
+            storage.setToken(newToken);
+            api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+            return api(originalRequest);
+          }
+        } catch (refreshError) {
+          // Si le refresh échoue aussi, on déconnecte
+          console.error("Échec du rafraîchissement du token:", refreshError);
+          storage.clearAll();
+          window.location.href = '/';
+        }
+      } else {
+        // Pas de refresh token, on déconnecte
+        storage.clearAll();
+        window.location.href = '/';
+      }
+    }
     return Promise.reject(error)
   },
 )
@@ -53,7 +82,14 @@ api.interceptors.response.use(
 
 // Functions pour API
 export const proAPI = {
-  register: (data: ProRegistration) => api.post<ProRegistrationResponse>("/api/pro/register", data),
+  register: (data: FormData) => {
+    return api.post<ProRegistrationResponse>("/api/pro/register", data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'bypass-tunnel-reminder': 'true'
+      }
+    });
+  },
 
   getStats: (slug: string) => api.get<ProStats>(`/api/pro/${slug}/stats`),
 
@@ -62,6 +98,14 @@ export const proAPI = {
   recovery: (data: ProRecovery) => api.post<ProRecoveryResult>("/api/pro/recovery", data),
 
   getSecretQuestion: (email: string) => api.post<ProRecoveryQuestionResult>("/api/pro/recovery/question", { email }),
+
+  update: (data: FormData) => {
+    return api.post<ProRegistrationResponse>("/api/pro/update", data, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
 }
 
 export const carteAPI = {

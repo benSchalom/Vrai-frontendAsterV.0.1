@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -10,6 +10,8 @@ import type { ProRegistration } from "../types/models"
 import { storage } from "../services/storage"
 import { proAPI } from "../services/api"
 import axios from "axios"
+import { COUNTRIES } from "../constants/countries"
+import { compressImage } from "../services/imageUtils"
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
@@ -26,12 +28,26 @@ const REWARD_TYPES = [
   { value: "REDUCTION", label: "Réduction" },
 ]
 
+
 export default function RegistrationFormSimple() {
 
   const navigate = useNavigate()
 
   const [currentStep, setCurrentStep] = useState(1)
+
+
   const [error, setError] = useState<string>("")
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string>("")
+
+  // Nettoyage de l'URL d'objet lors du démontage pour éviter les fuites mémoire
+  useEffect(() => {
+    return () => {
+      if (logoPreview) {
+        URL.revokeObjectURL(logoPreview);
+      }
+    };
+  }, [logoPreview]);
   const [ProRegistration, setProRegistration] = useState<ProRegistration>({
     nom: "",
     business_nom: "",
@@ -42,7 +58,9 @@ export default function RegistrationFormSimple() {
     reward_type: "SERVICE OFFERT",
     reward_limit: 10,
     brand_color: colors.primary,
+    pays: "CA",
   })
+  const [countrySearch, setCountrySearch] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const totalSteps = 4
@@ -97,9 +115,27 @@ export default function RegistrationFormSimple() {
 
     try {
 
-      ProRegistration.device_id = storage.getOrCreateDeviceId()
+      const formData = new FormData()
 
-      const response = await proAPI.register(ProRegistration)
+      formData.append('nom', ProRegistration.nom)
+      formData.append('business_nom', ProRegistration.business_nom)
+      formData.append('email', ProRegistration.email)
+      formData.append('device_id', storage.getOrCreateDeviceId())
+      formData.append('secret_question', ProRegistration.secret_question)
+      formData.append('secret_answer', ProRegistration.secret_answer)
+      formData.append('brand_color', ProRegistration.brand_color || colors.primary)
+
+      const rewardLimit = ProRegistration.reward_limit !== undefined ? ProRegistration.reward_limit : 10
+      formData.append('reward_limit', rewardLimit.toString())
+
+      formData.append('reward_type', ProRegistration.reward_type || "SERVICE OFFERT")
+      formData.append('pays', ProRegistration.pays || "CA")
+
+      if (logoFile) {
+        formData.append('logo_url', logoFile)
+      }
+
+      const response = await proAPI.register(formData)
       const result = response.data
 
       if (result.success) {
@@ -107,6 +143,7 @@ export default function RegistrationFormSimple() {
         storage.clearAll()
 
         storage.setToken(result.access_token)
+        storage.setRefreshToken(result.refresh_token)
         storage.setProInfo(result.pro)
 
         navigate(`/dashboard/${result.pro.slug}`)
@@ -259,6 +296,39 @@ export default function RegistrationFormSimple() {
                   </p>
                 )}
               </div>
+              <div>
+                <Label htmlFor="pays">Pays de votre établissement *</Label>
+                <div className="space-y-2">
+                  <Input
+                    type="text"
+                    placeholder="🔍 Rechercher un pays..."
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    className="h-8 text-sm bg-gray-50 border-gray-200"
+                  />
+                  <select
+                    id="pays"
+                    value={ProRegistration.pays}
+                    onChange={(e) => updateProRegistration("pays", e.target.value)}
+                    className="w-full h-9 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
+                    style={{ color: colors.text }}
+                  >
+                    {COUNTRIES.filter(c =>
+                      c.label.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                      c.code.toLowerCase().includes(countrySearch.toLowerCase())
+                    ).map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.label}
+                      </option>
+                    ))}
+                    {COUNTRIES.filter(c =>
+                      c.label.toLowerCase().includes(countrySearch.toLowerCase())
+                    ).length === 0 && (
+                        <option disabled>Aucun pays trouvé</option>
+                      )}
+                  </select>
+                </div>
+              </div>
             </div>
           )}
 
@@ -382,9 +452,9 @@ export default function RegistrationFormSimple() {
             </div>
           )}
 
-          {/* Step 4: Brand color */}
+          {/* Step 4: Brand color & Logo */}
           {currentStep === 4 && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center gap-2 mb-4">
                 <svg
                   className="w-5 h-5"
@@ -404,6 +474,70 @@ export default function RegistrationFormSimple() {
                   Identité visuelle
                 </h3>
               </div>
+
+              {/* Upload du Logo */}
+              <div className="space-y-4 border-b pb-6">
+                <Label>Logo de votre établissement</Label>
+                <div className="flex items-center gap-4">
+                  {logoPreview ? (
+                    <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
+                      <img
+                        src={logoPreview}
+                        alt="Logo Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button type='button'
+                        onClick={() => {
+                          setLogoFile(null);
+                          setLogoPreview("");
+                        }}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-lg"
+                      >
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
+
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        console.log("📁 [MOBILE_DEBUG] Sélection de fichier détectée");
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          console.log("📄 [MOBILE_DEBUG] Fichier original :", file.name, (file.size / 1024).toFixed(2), "KB");
+                          try {
+                            console.log("📉 [MOBILE_DEBUG] Appels compressImage...");
+                            const compressed = await compressImage(file);
+                            console.log("✅ [MOBILE_DEBUG] Compression terminée :", (compressed.size / 1024).toFixed(2), "KB");
+
+                            setLogoFile(compressed)
+                            const previewUrl = URL.createObjectURL(compressed);
+                            setLogoPreview(previewUrl);
+                          } catch (err) {
+                            console.error("❌ [MOBILE_DEBUG] Erreur traitement :", err);
+                            setLogoFile(file);
+                            const previewUrl = URL.createObjectURL(file);
+                            setLogoPreview(previewUrl);
+                          }
+                        }
+                      }}
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                    />
+                    <p className="text-xs mt-1 text-gray-500">PNG, JPG ou WEBP. Max 2MB.</p>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="brand_color">Couleur de votre marque *</Label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
