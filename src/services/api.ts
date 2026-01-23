@@ -17,7 +17,7 @@ import { storage } from "./storage"
 // Configuration de l'API
 export const api = axios.create({
   //baseURL: 'http://192.168.0.20:5000',
-  baseURL: 'https://new-spiders-say.loca.lt',
+  baseURL: ' https://clear-words-slide.loca.lt',
 
   timeout: 10000,
   headers: {

@@ -23,7 +23,18 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: system-ui, -apple-system, sans-serif;">
+        <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; margin-bottom: 20px;"></div>
+        <p>Chargement d'Aster...</p>
+        <noscript>
+          <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">JavaScript est requis pour utiliser cette application.</p>
+        </noscript>
+      </div>
+      <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

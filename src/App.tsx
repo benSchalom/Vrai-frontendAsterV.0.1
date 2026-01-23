@@ -13,12 +13,13 @@ import SettingsPage from "./screen/SettingsPage"
 function App() {
 
   const proInfo = storage.getProInfo();
+  const token = storage.getToken();
 
   return (
     <BrowserRouter>
       <Routes>
         {/* Page d'accueil - Formulaire d'inscription des pros */}
-        <Route path="/" element={proInfo?.slug ? <Navigate to={`/dashboard/${proInfo.slug}`} /> : <HomePage />} />
+        <Route path="/" element={proInfo?.slug && token ? <Navigate to={`/dashboard/${proInfo.slug}`} /> : <HomePage />} />
 
         {/* Dash du pro - Accessible après inscription */}
         <Route path="/dashboard/:slug" element={<DashboardPage />} />
