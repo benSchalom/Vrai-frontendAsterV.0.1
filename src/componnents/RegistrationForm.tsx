@@ -53,6 +53,7 @@ export default function RegistrationFormSimple() {
     business_nom: "",
     email: "",
     device_id: storage.getOrCreateDeviceId(),
+    device_name: storage.getDeviceInfo(),
     secret_question: "",
     secret_answer: "",
     reward_type: "SERVICE OFFERT",
@@ -121,6 +122,7 @@ export default function RegistrationFormSimple() {
       formData.append('business_nom', ProRegistration.business_nom)
       formData.append('email', ProRegistration.email)
       formData.append('device_id', storage.getOrCreateDeviceId())
+      formData.append('device_name', storage.getDeviceInfo())
       formData.append('secret_question', ProRegistration.secret_question)
       formData.append('secret_answer', ProRegistration.secret_answer)
       formData.append('brand_color', ProRegistration.brand_color || colors.primary)

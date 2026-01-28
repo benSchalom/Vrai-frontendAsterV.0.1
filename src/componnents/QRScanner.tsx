@@ -108,7 +108,8 @@ export default function QRScanner({ slug }: QRScannerProps) {
 
       const scanData: CarteScan = {
         serial_number: serialFromUrl,
-        slug: proInfo.slug
+        slug: proInfo.slug,
+        device_id: storage.getOrCreateDeviceId()
       };
 
       const response = await carteAPI.scan(scanData);

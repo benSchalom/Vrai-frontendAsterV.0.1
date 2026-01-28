@@ -120,7 +120,11 @@ export default function EnrollmentPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-md w-full">
-          <Alert variant="destructive"> Ce commerce n'existe pas </Alert>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-md w-full">
+            <Alert variant="destructive">
+              {error || "Ce commerce n'existe pas"}
+            </Alert>
+          </div>
         </div>
       </div>
     )

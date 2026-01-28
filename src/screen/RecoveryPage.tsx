@@ -19,7 +19,8 @@ export default function RecoveryPage() {
   const [formData, setFormData] = useState<ProRecovery>({
     email: "",
     secret_answer: "",
-    new_device_id: ""
+    new_device_id: "",
+    new_device_name: ""
   })
   const [secretQuestion, setSecretQuestion] = useState("")
   const [loading, setLoading] = useState(false)
@@ -71,13 +72,20 @@ export default function RecoveryPage() {
 
     try {
       const newDeviceId = storage.getOrCreateDeviceId()
+      const newDeviceName = storage.getDeviceInfo()
 
       if (!newDeviceId) {
         setError("Erreur d'initialisation de l'appareil")
         return
       }
 
-      const response = await proAPI.recovery(formData)
+      const recoveryData = {
+        ...formData,
+        new_device_id: newDeviceId,
+        new_device_name: newDeviceName
+      }
+
+      const response = await proAPI.recovery(recoveryData)
 
       if (response.data.success) {
         const { pro, access_token, refresh_token } = response.data

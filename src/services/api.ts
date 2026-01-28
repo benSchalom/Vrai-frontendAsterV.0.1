@@ -17,7 +17,7 @@ import { storage } from "./storage"
 // Configuration de l'API
 export const api = axios.create({
   //baseURL: 'http://192.168.0.20:5000',
-  baseURL: ' https://clear-words-slide.loca.lt',
+  baseURL: 'https://wise-lands-play.loca.lt',
 
   timeout: 10000,
   headers: {
@@ -106,6 +106,21 @@ export const proAPI = {
       }
     });
   },
+
+  deactivateDevice: (deviceId: string) =>
+    api.post<{ success: boolean; message: string }>("/api/pro/device/desactivate", {
+      device_id: deviceId
+    }),
+
+  activateDevice: (deviceId: string) =>
+    api.post<{ success: boolean; message: string }>("/api/pro/device/activate", {
+      device_id: deviceId
+    }),
+
+  deleteDevice: (deviceId: string) =>
+    api.delete<{ success: boolean; message: string }>("/api/pro/device/delete", {
+      data: { device_id: deviceId }
+    })
 }
 
 export const carteAPI = {

@@ -36,12 +36,15 @@ export default function SettingsPage() {
     })
     const [countrySearch, setCountrySearch] = useState("")
 
+    const [proInfo, setProInfo] = useState(storage.getProInfo())
+
     useEffect(() => {
         const cachedPro = storage.getProInfo()
         if (!cachedPro) {
             navigate("/")
             return
         }
+        setProInfo(cachedPro)
         setFormData({
             nom: cachedPro.nom,
             business_nom: cachedPro.business_nom,
@@ -51,8 +54,79 @@ export default function SettingsPage() {
             reward_type: cachedPro.reward_type,
             pays: cachedPro.pays || "CA"
         })
-        setLogoPreview(cachedPro.logo_url || ""); // Initialise l'aperçu avec l'URL existante
+        setLogoPreview(cachedPro.logo_url || "");
     }, [slug])
+
+    const handleDeactivateDevice = async (deviceId: string) => {
+        if (!confirm("Voulez-vous vraiment désactiver cet appareil ?")) return;
+
+        try {
+            const res = await proAPI.deactivateDevice(deviceId);
+            if (res.data.success) {
+                // Update local state
+                const currentInfo = storage.getProInfo();
+                if (currentInfo && currentInfo.appareils) {
+                    const updatedAppareils = currentInfo.appareils.map(app =>
+                        app.identifiant === deviceId ? { ...app, etat: false } : app
+                    );
+                    const updatedInfo = { ...currentInfo, appareils: updatedAppareils };
+                    storage.setProInfo(updatedInfo);
+                    setProInfo(updatedInfo);
+                    setSuccess(true);
+                    setTimeout(() => setSuccess(false), 3000);
+                }
+            }
+        } catch (err) {
+            setError("Erreur lors de la désactivation de l'appareil");
+            console.error(err);
+        }
+    }
+
+    const handleActivateDevice = async (deviceId: string) => {
+        try {
+            const res = await proAPI.activateDevice(deviceId);
+            if (res.data.success) {
+                // Update local state
+                const currentInfo = storage.getProInfo();
+                if (currentInfo && currentInfo.appareils) {
+                    const updatedAppareils = currentInfo.appareils.map(app =>
+                        app.identifiant === deviceId ? { ...app, etat: true } : app
+                    );
+                    const updatedInfo = { ...currentInfo, appareils: updatedAppareils };
+                    storage.setProInfo(updatedInfo);
+                    setProInfo(updatedInfo);
+                    setSuccess(true);
+                    setTimeout(() => setSuccess(false), 3000);
+                }
+            }
+        } catch (err) {
+            setError("Erreur lors de l'activation de l'appareil");
+            console.error(err);
+        }
+    }
+
+    const handleRealDeleteDevice = async (deviceId: string) => {
+        if (!confirm("Voulez-vous vraiment SUPPRIMER DÉFINITIVEMENT cet appareil ? Cette action est irréversible.")) return;
+
+        try {
+            const res = await proAPI.deleteDevice(deviceId);
+            if (res.data.success) {
+                // Update local state
+                const currentInfo = storage.getProInfo();
+                if (currentInfo && currentInfo.appareils) {
+                    const updatedAppareils = currentInfo.appareils.filter(app => app.identifiant !== deviceId);
+                    const updatedInfo = { ...currentInfo, appareils: updatedAppareils };
+                    storage.setProInfo(updatedInfo);
+                    setProInfo(updatedInfo);
+                    setSuccess(true);
+                    setTimeout(() => setSuccess(false), 3000);
+                }
+            }
+        } catch (err) {
+            setError("Erreur lors de la suppression de l'appareil");
+            console.error(err);
+        }
+    }
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -78,8 +152,9 @@ export default function SettingsPage() {
             if (response.data.success) {
                 setSuccess(true)
                 storage.setProInfo(response.data.pro)
+                setProInfo(response.data.pro) // Update local state
                 setLogoPreview(response.data.pro.logo_url || "");
-                setLogoFile(null); // Réinitialise le fichier local
+                setLogoFile(null);
                 setTimeout(() => setSuccess(false), 3000)
             } else {
                 setError("Erreur lors de la mise à jour")
@@ -104,7 +179,7 @@ export default function SettingsPage() {
                 {success && (
                     <Alert className="bg-green-50 border-green-200 text-green-800">
                         <AlertTitle>Succès !</AlertTitle>
-                        <AlertDescription>Vos modifications ont été enregistrées.</AlertDescription>
+                        <AlertDescription>Opération effectuée avec succès.</AlertDescription>
                     </Alert>
                 )}
 
@@ -146,8 +221,8 @@ export default function SettingsPage() {
                                 <Label>Logo</Label>
                                 <div className="flex items-center gap-4">
                                     <div className="w-20 h-20 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden">
-                                        {logoPreview? (
-                                            <img src={logoPreview} className="w-full h-full object-cover" alt="Logo preview"/>
+                                        {logoPreview ? (
+                                            <img src={logoPreview} className="w-full h-full object-cover" alt="Logo preview" />
                                         ) : (
                                             <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -168,7 +243,7 @@ export default function SettingsPage() {
                                             className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 cursor-pointer"
                                         />
                                         {logoFile && (
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onClick={() => {
                                                     setLogoFile(null);
@@ -273,6 +348,65 @@ export default function SettingsPage() {
                                     onChange={e => setFormData(prev => ({ ...prev, reward_limit: parseInt(e.target.value) }))}
                                 />
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Section: Appareils Connectés */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Appareils Connectés</CardTitle>
+                            <CardDescription>Liste des appareils autorisés à scanner</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {proInfo?.appareils?.length ? (
+                                <div className="space-y-3">
+                                    {proInfo.appareils.map((app, index) => (
+                                        <div key={index} className="flex justify-between items-center p-3 border rounded-lg bg-gray-50">
+                                            <div>
+                                                <p className="font-medium text-sm text-gray-900">{app.nom}</p>
+                                                <p className="text-xs text-gray-500 font-mono">ID: ...{app.identifiant.slice(-6)}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`px-2 py-1 rounded text-xs font-medium ${app.etat ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {app.etat ? 'Actif' : 'Révoqué'}
+                                                </div>
+                                                {app.etat ? (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-orange-500 hover:text-orange-700 hover:bg-orange-50 h-8"
+                                                        type="button"
+                                                        onClick={() => handleDeactivateDevice(app.identifiant)}
+                                                    >
+                                                        Désactiver
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-green-500 hover:text-green-700 hover:bg-green-50 h-8"
+                                                        type="button"
+                                                        onClick={() => handleActivateDevice(app.identifiant)}
+                                                    >
+                                                        Activer
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8"
+                                                    type="button"
+                                                    onClick={() => handleRealDeleteDevice(app.identifiant)}
+                                                >
+                                                    Supprimer
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 text-center py-4">Aucun appareil connecté visible.</p>
+                            )}
                         </CardContent>
                     </Card>
 

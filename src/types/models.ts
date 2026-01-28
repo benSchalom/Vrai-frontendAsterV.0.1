@@ -5,6 +5,7 @@ export interface ProRegistration {
   business_nom: string
   email: string
   device_id: string
+  device_name: string
   secret_question: string
   secret_answer: string
   brand_color?: string
@@ -17,7 +18,8 @@ export interface ProRegistration {
 export interface ProRecovery {
   email: string,
   secret_answer: string,
-  new_device_id: string
+  new_device_id: string,
+  new_device_name: string
 }
 
 export interface ClientEnrollment {
@@ -28,7 +30,8 @@ export interface ClientEnrollment {
 
 export interface CarteScan {
   serial_number: string,
-  slug: string
+  slug: string,
+  device_id: string
 }
 
 
@@ -36,9 +39,9 @@ export interface CarteScan {
 // ********* A REVOIR L'UTILITE DE CE MODELE **********
 export interface ProInfo {
   success: boolean
-
   pro: {
     id: number
+    email: string
     nom: string
     business_nom: string
     brand_color: string
@@ -47,6 +50,11 @@ export interface ProInfo {
     reward_limit: number
     reward_type: "SERVICE OFFERT" | "REDUCTION"
     pays?: string
+    appareils?: {
+      nom: string
+      identifiant: string
+      etat: boolean
+    }[]
   }
 }
 

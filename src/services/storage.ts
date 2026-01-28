@@ -1,4 +1,6 @@
+import { UAParser } from 'ua-parser-js'
 import type { ProInfo, ProStats } from "../types/models"
+
 
 
 // LocalStorage utilities pour PWA
@@ -78,7 +80,6 @@ export const storage = {
     }
   },
 
-
   // Device ID
   getOrCreateDeviceId: (): string => {
     if (typeof window !== "undefined") {
@@ -102,4 +103,16 @@ export const storage = {
       localStorage.removeItem("pro_stats")
     }
   },
+
+  // Device Info
+  getDeviceInfo: (): string => {
+    if (typeof window !== "undefined") {
+      const parser = new UAParser(navigator.userAgent);
+      const result = parser.getResult();
+      const os = result.os.name || 'Unknown OS';
+      const device = result.device.model || result.device.type || 'Desktop';
+      return `${os} (${device})`;
+    }
+    return 'Unknown Device';
+  }
 }
