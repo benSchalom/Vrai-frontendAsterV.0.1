@@ -2,10 +2,12 @@ import { useEffect, useState, useRef } from "react"
 import { useParams } from "react-router-dom"
 import { Card, CardContent, CardHeader } from "../componnents/ui/card"
 import { Button } from "../componnents/ui/button"
+import { Alert, AlertDescription } from "../componnents/ui/alert"
 import { colors } from "../constants/colors"
 import type { CarteInfo } from "../types/models"
 import { carteAPI } from "../services/api"
 import { AddToWalletButton } from "../componnents/AddToWalletButton"
+import { getOptimizedImageUrl } from "../services/imageUtils"
 
 
 export default function CartePage() {
@@ -67,9 +69,11 @@ export default function CartePage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <Card className="max-w-md w-full">
-          <CardContent className="pt-6 text-center">
-            <p className="text-red-500">{error || "Erreur de chargement"}</p>
-            <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
+          <CardContent className="pt-6 space-y-4">
+            <Alert variant="destructive">
+              <AlertDescription>{error || "Erreur de chargement"}</AlertDescription>
+            </Alert>
+            <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
               Réessayer
             </Button>
           </CardContent>
@@ -91,7 +95,7 @@ export default function CartePage() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white/20">
                 {pro.logo_url ? (
-                  <img src={pro.logo_url} alt={pro.business_name} className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(pro.logo_url, 150)} alt={pro.business_name} className="w-full h-full object-cover" />
                 ) : (
                   <svg className="w-6 h-6" style={{ color: pro.brand_color || colors.primary }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -168,9 +172,27 @@ export default function CartePage() {
             }}
           >
             <div className="absolute inset-0 flex items-center justify-between px-6">
-              <div>
-                <p className="text-white/80 text-sm">Carte de fidélité</p>
-                <p className="text-white font-bold text-lg mt-1">{pro.business_name}</p>
+              <div className="flex items-center gap-3">
+                {pro.logo_url ? (
+                  <img
+                    src={getOptimizedImageUrl(pro.logo_url, 80)}
+                    alt={pro.business_name}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-white/30"
+                  />
+                ) : (
+                  <svg className="w-12 h-12 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                )}
+                <div>
+                  <p className="text-white/80 text-sm">Carte de fidélité</p>
+                  <p className="text-white font-bold text-lg mt-1">{pro.business_name}</p>
+                </div>
               </div>
               <svg className="w-12 h-12 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

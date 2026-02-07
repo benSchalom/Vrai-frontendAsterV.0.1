@@ -14,7 +14,7 @@ export function Alert({ children, variant = "default", className = "" }: AlertPr
   if (variant === "default") {
     variantClasses = "bg-card text-card-foreground"
   } else if (variant === "destructive") {
-    variantClasses = "text-destructive bg-card [&>svg]:text-current *:data-[slot=alert-description]:text-destructive/90"
+    variantClasses = "text-red-600 bg-red-50 border-red-200 [&>svg]:text-red-600 *:data-[slot=alert-description]:text-red-700"
   }
 
   const allClasses = `${baseClasses} ${variantClasses} ${className}`
@@ -48,7 +48,7 @@ interface AlertDescriptionProps {
 }
 
 export function AlertDescription({ children, className = "" }: AlertDescriptionProps) {
-  const baseClasses = "text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed"
+  const baseClasses = "col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed"
   const allClasses = `${baseClasses} ${className}`
 
   return (

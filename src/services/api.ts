@@ -15,9 +15,12 @@ import { storage } from "./storage"
 
 
 // Configuration de l'API
+// En dev local : VITE_API_URL=http://localhost:5000 (ou laisser vide)
+// Avec tunnel : VITE_API_URL=https://votre-tunnel.loca.lt
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export const api = axios.create({
-  //baseURL: 'http://192.168.0.20:5000',
-  baseURL: 'https://wise-lands-play.loca.lt',
+  baseURL,
 
   timeout: 10000,
   headers: {
@@ -137,5 +140,36 @@ export const walletAPI = {
   createPass: async (serial_number: string) => {
     const response = await api.post("/api/wallet/create-pass", { serial_number })
     return response.data
+  },
+
+  /** URL pour télécharger le pass Apple (.pkpass). Sans certificat configuré, le serveur retourne 503. */
+  getApplePassUrl: (serial_number: string): string => {
+    const base = api.defaults.baseURL || ''
+    return `${base}/api/wallet/apple-pass/${encodeURIComponent(serial_number)}`
+  },
+
+  /** Télécharge le pass Apple ; retourne { ok: true } ou { ok: false, error: string }. */
+  downloadApplePass: async (serial_number: string): Promise<{ ok: true } | { ok: false; error: string }> => {
+    const url = walletAPI.getApplePassUrl(serial_number)
+    try {
+      const response = await fetch(url, { credentials: 'include' })
+      if (response.status === 503) {
+        const data = await response.json().catch(() => ({}))
+        return { ok: false, error: data?.message || 'Apple Wallet sera disponible prochainement.' }
+      }
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        return { ok: false, error: data?.error || 'Impossible de télécharger le pass.' }
+      }
+      const blob = await response.blob()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${serial_number}.pkpass`
+      a.click()
+      URL.revokeObjectURL(a.href)
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: 'Apple Wallet sera disponible prochainement.' }
+    }
   },
 }

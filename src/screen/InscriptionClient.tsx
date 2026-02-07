@@ -1,5 +1,3 @@
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Button } from "../componnents/ui/button"
@@ -48,15 +46,10 @@ export default function EnrollmentPage() {
         setError("Commerce introuvable")
       }
     } catch (err: unknown) {
-
-      // Pour accéder aux propriétés spécifiques d'Axios sans utiliser 'any'
       const axiosError = err as {
         message: string;
-        config?: { url: string };
         response?: { data: { error?: string }; status: number }
       };
-
-      console.error("DEBUG RÉSEAU:", axiosError.message, axiosError.config?.url);
 
       const msg = axiosError.response?.data?.error || axiosError.message || "Une erreur est survenue.";
       setError(msg);
@@ -90,9 +83,14 @@ export default function EnrollmentPage() {
         setError("Erreur lors de l'inscription")
       }
     } catch (err: unknown) {
-      const error = err as Error
-      console.error("Erreur lors de l'inscription:", error.message)
-      const msg = error.message || "Une erreur est survenue. Réessayez."
+      const axiosError = err as {
+        message?: string
+        response?: { data?: { error?: string }; status?: number }
+      }
+      const msg =
+        axiosError.response?.data?.error ||
+        axiosError.message ||
+        "Une erreur est survenue. Réessayez."
       setError(msg)
     } finally {
       setIsSubmitting(false)
@@ -108,8 +106,10 @@ export default function EnrollmentPage() {
         </div>
 
         {error && (
-          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-mono break-all w-full max-w-sm">
-            <strong>Log erreur :</strong> {error}
+          <div className="mt-8 w-full max-w-sm">
+            <Alert variant="destructive">
+              {error}
+            </Alert>
           </div>
         )}
       </div>
@@ -120,11 +120,9 @@ export default function EnrollmentPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-md w-full">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-md w-full">
-            <Alert variant="destructive">
-              {error || "Ce commerce n'existe pas"}
-            </Alert>
-          </div>
+          <Alert variant="destructive">
+            {error || "Ce commerce n'existe pas"}
+          </Alert>
         </div>
       </div>
     )
@@ -139,12 +137,18 @@ export default function EnrollmentPage() {
           <div className="p-6">
             <div className="text-center mb-6">
               <div
-                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-                style={{ backgroundColor: colors.success }}
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden border-2"
+                style={{ borderColor: brandColor }}
               >
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                {proInfo.logo_url ? (
+                  <img src={proInfo.logo_url} alt={proInfo.business_nom} className="w-full h-full object-cover" />
+                ) : (
+                  <div style={{ backgroundColor: colors.success }} className="w-full h-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{message}</h2>
               <p className="text-gray-600">Votre carte de fidélité a été créée</p>
@@ -226,17 +230,21 @@ export default function EnrollmentPage() {
         <div className="p-6">
           <div className="text-center mb-6">
             <div
-              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ backgroundColor: brandColor }}
+              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden border-2"
+              style={{ backgroundColor: proInfo.logo_url ? 'transparent' : brandColor, borderColor: brandColor }}
             >
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
+              {proInfo.logo_url ? (
+                <img src={proInfo.logo_url} alt={proInfo.business_nom} className="w-full h-full object-cover" />
+              ) : (
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              )}
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{proInfo.business_nom}</h2>
             <p className="text-gray-600">Rejoignez notre programme de fidélité</p>

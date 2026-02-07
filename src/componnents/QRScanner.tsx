@@ -31,6 +31,14 @@ export default function QRScanner({ slug }: QRScannerProps) {
   }, [])
 
   const startScanning = async () => {
+    // iOS Safari : la caméra nécessite HTTPS (contexte sécurisé)
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setError(
+        "La caméra nécessite une connexion HTTPS sur iPhone. " +
+        "En dev, utilisez un tunnel (ngrok, localtunnel) pour tester. Voir DEV_IPHONE_TESTING.md"
+      )
+      return
+    }
 
     try {
       setError("")
@@ -56,8 +64,7 @@ export default function QRScanner({ slug }: QRScannerProps) {
         scanner.render(onScanSuccess, onScanFailure);
         scannerRef.current = scanner;
       }, 100);
-    } catch (err: any) {
-      console.log("[v0] Camera access error:", err)
+    } catch {
       setError("Impossible d'accéder à la caméra. Vérifiez les permissions.")
     }
   }
@@ -80,7 +87,7 @@ export default function QRScanner({ slug }: QRScannerProps) {
     handleScan(decodedText);
   }
 
-  const onScanFailure = (_error: any) => {
+  const onScanFailure = () => {
     // On ignore les échecs de lecture continue
   }
 
@@ -120,9 +127,11 @@ export default function QRScanner({ slug }: QRScannerProps) {
       } else {
         setError(data.message || "Erreur lors du scan")
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || "Impossible de joindre le serveur.";
-      setError(errorMessage);
+    } catch (err) {
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+        : undefined;
+      setError(msg || "Impossible de joindre le serveur.");
     }
   }
 

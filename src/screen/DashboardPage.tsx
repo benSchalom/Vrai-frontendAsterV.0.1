@@ -7,6 +7,7 @@ import QRCodeDisplay from "../componnents/QRCodeDisplay"
 import { colors } from "../constants/colors"
 import { storage } from "../services/storage"
 import { proAPI } from "../services/api"
+import { getOptimizedImageUrl } from "../services/imageUtils"
 import type { ProInfo, ProStats } from "../types/models"
 
 export default function DashboardPage() {
@@ -123,7 +124,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-sm">
                 {proInfo.logo_url ? (
-                  <img src={proInfo.logo_url} alt={proInfo.business_nom} className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(proInfo.logo_url, 150)} alt={proInfo.business_nom} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-xl font-bold" style={{ color: brandColor }}>
                     {proInfo.business_nom.charAt(0)}

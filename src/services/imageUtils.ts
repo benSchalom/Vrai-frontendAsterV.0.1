@@ -77,3 +77,30 @@ export const compressImage = async (
         reader.onerror = () => reject(new Error("Erreur lors de la lecture du fichier"));
     });
 };
+
+/**
+ * Transforme une URL Cloudinary pour ajouter des optimisations automatiques (format, qualité, taille).
+ * Exemple: https://res.cloudinary.com/demo/image/upload/sample.jpg
+ * -> https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,w_500/sample.jpg
+ */
+export const getOptimizedImageUrl = (url: string | null | undefined, width = 500): string => {
+    if (!url) return "";
+
+    // Si ce n'est pas une URL Cloudinary (ex: blob local ou autre domaine), on ne transforme pas
+    if (!url.includes("cloudinary.com")) return url;
+
+    // Éviter de transformer une URL déjà optimisée
+    if (url.includes("/f_auto,q_auto")) return url;
+
+    try {
+        // On insère les transformations après "/upload/"
+        const parts = url.split("/upload/");
+        if (parts.length === 2) {
+            return `${parts[0]}/upload/f_auto,q_auto,w_${width}/${parts[1]}`;
+        }
+    } catch (e) {
+        console.error("Erreur lors de l'optimisation de l'URL Cloudinary:", e);
+    }
+
+    return url;
+};

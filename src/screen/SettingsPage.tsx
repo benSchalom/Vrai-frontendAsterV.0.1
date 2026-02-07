@@ -10,6 +10,7 @@ import { storage } from "../services/storage"
 import { proAPI } from "../services/api"
 import type { ProRegistration } from "../types/models"
 import { COUNTRIES } from "../constants/countries"
+import { getOptimizedImageUrl } from "../services/imageUtils"
 
 const REWARD_TYPES = [
     { value: "SERVICE OFFERT", label: "Service offert" },
@@ -54,7 +55,7 @@ export default function SettingsPage() {
             reward_type: cachedPro.reward_type,
             pays: cachedPro.pays || "CA"
         })
-        setLogoPreview(cachedPro.logo_url || "");
+        setLogoPreview(cachedPro.logo || cachedPro.logo_url || "");
     }, [slug])
 
     const handleDeactivateDevice = async (deviceId: string) => {
@@ -145,6 +146,8 @@ export default function SettingsPage() {
 
             if (logoFile) {
                 fd.append('logo_url', logoFile);
+            } else if (formData.logo_url) {
+                fd.append('logo_url', formData.logo_url);
             }
 
             const response = await proAPI.update(fd)
@@ -153,13 +156,13 @@ export default function SettingsPage() {
                 setSuccess(true)
                 storage.setProInfo(response.data.pro)
                 setProInfo(response.data.pro) // Update local state
-                setLogoPreview(response.data.pro.logo_url || "");
+                setLogoPreview(response.data.pro.logo ?? response.data.pro.logo_url ?? "");
                 setLogoFile(null);
                 setTimeout(() => setSuccess(false), 3000)
             } else {
                 setError("Erreur lors de la mise à jour")
             }
-        } catch (err: unknown) {
+        } catch {
             setError("Le serveur est injoignable ou une erreur est survenue.")
         } finally {
             setLoading(false)
@@ -222,22 +225,34 @@ export default function SettingsPage() {
                                 <div className="flex items-center gap-4">
                                     <div className="w-20 h-20 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden">
                                         {logoPreview ? (
-                                            <img src={logoPreview} className="w-full h-full object-cover" alt="Logo preview" />
+                                            <img src={getOptimizedImageUrl(logoPreview, 200)} className="w-full h-full object-cover" alt="Logo preview" />
                                         ) : (
                                             <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         )}
                                     </div>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 flex-1">
+                                        <Input
+                                            type="url"
+                                            placeholder="https://... (URL du logo)"
+                                            value={formData.logo_url || ""}
+                                            onChange={e => {
+                                                const url = e.target.value;
+                                                setFormData(prev => ({ ...prev, logo_url: url }));
+                                                if (url) setLogoPreview(url);
+                                            }}
+                                            className="text-sm"
+                                        />
+                                        <span className="text-xs text-gray-500">ou</span>
                                         <input
                                             type="file"
                                             accept="image/*"
                                             onChange={e => {
                                                 const file = e.target.files?.[0];
                                                 if (file) {
-                                                    setLogoFile(file); // Prépare le fichier pour le FormData
-                                                    setLogoPreview(URL.createObjectURL(file)); // Affiche l'aperçu immédiat
+                                                    setLogoFile(file);
+                                                    setLogoPreview(URL.createObjectURL(file));
                                                 }
                                             }}
                                             className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 cursor-pointer"
@@ -247,11 +262,11 @@ export default function SettingsPage() {
                                                 type="button"
                                                 onClick={() => {
                                                     setLogoFile(null);
-                                                    setLogoPreview(formData.logo_url || ""); // Revient au logo actuel
+                                                    setLogoPreview(formData.logo_url || "");
                                                 }}
                                                 className="text-xs text-red-500 text-left hover:underline"
                                             >
-                                                Annuler
+                                                Annuler l'upload
                                             </button>
                                         )}
                                     </div>

@@ -165,8 +165,6 @@ export default function RegistrationFormSimple() {
       }
 
       setError(errorMsg);
-      // Pour debug sur le tel de ton ami :
-      alert("Détail erreur : " + errorMsg);
     } finally {
       setIsSubmitting(false)
     }
@@ -513,20 +511,14 @@ export default function RegistrationFormSimple() {
                       type="file"
                       accept="image/*"
                       onChange={async (e) => {
-                        console.log("📁 [MOBILE_DEBUG] Sélection de fichier détectée");
                         const file = e.target.files?.[0]
                         if (file) {
-                          console.log("📄 [MOBILE_DEBUG] Fichier original :", file.name, (file.size / 1024).toFixed(2), "KB");
                           try {
-                            console.log("📉 [MOBILE_DEBUG] Appels compressImage...");
                             const compressed = await compressImage(file);
-                            console.log("✅ [MOBILE_DEBUG] Compression terminée :", (compressed.size / 1024).toFixed(2), "KB");
-
                             setLogoFile(compressed)
                             const previewUrl = URL.createObjectURL(compressed);
                             setLogoPreview(previewUrl);
-                          } catch (err) {
-                            console.error("❌ [MOBILE_DEBUG] Erreur traitement :", err);
+                          } catch {
                             setLogoFile(file);
                             const previewUrl = URL.createObjectURL(file);
                             setLogoPreview(previewUrl);

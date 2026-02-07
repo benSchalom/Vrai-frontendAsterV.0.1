@@ -4,7 +4,7 @@ import type * as React from "react"
 
 interface InputProps {
   type?: string
-  value?: any
+  value?: string | number
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   placeholder?: string
   disabled?: boolean

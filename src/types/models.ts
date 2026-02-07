@@ -45,6 +45,8 @@ export interface ProInfo {
     nom: string
     business_nom: string
     brand_color: string
+    /** URL du logo (retournée par l'API sous la clé "logo") */
+    logo?: string
     logo_url?: string
     slug: string
     reward_limit: number

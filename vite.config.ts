@@ -47,10 +47,8 @@ export default defineConfig({
   })],
 
   server: {
-    host: true, // Pour le --host
-    allowedHosts: [
-      '.dev'
-    ]
+    host: true, // Pour le --host et les tunnels (ngrok, localtunnel)
+    allowedHosts: true, // Accepter tout host (tunnel, IP, localhost)
   },
 
 })
