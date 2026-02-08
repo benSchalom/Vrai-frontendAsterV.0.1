@@ -17,15 +17,14 @@ import { storage } from "./storage"
 // Configuration de l'API
 // En dev local : VITE_API_URL=http://localhost:5000 (ou laisser vide)
 // Avec tunnel : VITE_API_URL=https://votre-tunnel.loca.lt
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const api = axios.create({
-  baseURL,
+  baseURL: API_URL,
 
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-    "bypass-tunnel-reminder": "true"
   },
 })
 
