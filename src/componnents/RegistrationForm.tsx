@@ -155,12 +155,13 @@ export default function RegistrationFormSimple() {
     } catch (err: unknown) {
       let errorMsg = "Le serveur est injoignable.";
 
-      // On vérifie si c'est une erreur Axios
       if (axios.isAxiosError(err)) {
-        // Ici, TypeScript débloque automatiquement l'accès à .response
         errorMsg = err.response?.data?.error || err.message;
+        // Erreur réseau (pas de réponse) : souvent API URL manquante ou CORS en prod
+        if (!err.response && (err.message === "Network Error" || err.code === "ERR_NETWORK")) {
+          errorMsg = "Impossible de contacter le serveur. Vérifiez votre connexion internet ou réessayez plus tard.";
+        }
       } else if (err instanceof Error) {
-        // Si c'est une erreur JS classique (ex: crash mémoire)
         errorMsg = err.message;
       }
 
